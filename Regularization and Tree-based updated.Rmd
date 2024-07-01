@@ -1,0 +1,1222 @@
+---
+title: "Assignment 5"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r}
+data <- read.csv("C:\\Users\\Precision T3620\\Downloads\\NIJ_s_Recidivism_Challenge_Full_Dataset_20240402.csv")
+```
+
+```{r}
+data <- data[, -1]
+data <- subset(data, select = -c(Recidivism_Arrest_Year1, Recidivism_Arrest_Year2, Recidivism_Arrest_Year3))
+```
+
+```{r}
+str(data)
+```
+
+```{r}
+cat("
+Categorical Variables:
+Gender
+Race
+Age_at_Release
+Gang_Affiliated
+Supervision_Level_First
+Education_Level
+Dependents
+Prison_Offense
+Prison_Years
+Prior_Arrest_Episodes_Felony
+Prior_Arrest_Episodes_Misd
+Prior_Arrest_Episodes_Violent
+Prior_Arrest_Episodes_Property
+Prior_Arrest_Episodes_Drug
+Prior_Arrest_Episodes_PPViolationCharges
+Prior_Arrest_Episodes_DVCharges
+Prior_Arrest_Episodes_GunCharges
+Prior_Conviction_Episodes_Felony
+Prior_Conviction_Episodes_Misd
+Prior_Conviction_Episodes_Viol
+Prior_Conviction_Episodes_Prop
+Prior_Conviction_Episodes_Drug
+Prior_Conviction_Episodes_PPViolationCharges
+Prior_Conviction_Episodes_DomesticViolenceCharges
+Prior_Conviction_Episodes_GunCharges
+Prior_Revocations_Parole
+Prior_Revocations_Probation
+Condition_MH_SA
+Condition_Cog_Ed
+Condition_Other
+Violations_ElectronicMonitoring
+Violations_Instruction
+Violations_FailToReport
+Violations_MoveWithoutPermission
+Delinquency_Reports
+Program_Attendances
+Program_UnexcusedAbsences
+Residence_Changes
+Employment_Exempt
+Recidivism_Within_3years (target variable)
+Training_Sample
+
+Numerical Variables:
+Residence_PUMA
+Supervision_Risk_Score_First
+Avg_Days_per_DrugTest
+DrugTests_THC_Positive
+DrugTests_Cocaine_Positive
+DrugTests_Meth_Positive
+DrugTests_Other_Positive
+Percent_Days_Employed
+Jobs_Per_Year
+
+There are 41 categorical variables and 9 numerical variables in the dataset
+")
+
+
+```
+Question: 1
+```{r}
+missing_values <- colMeans(data == "" | is.na(data)) * 100
+columns_with_missing <- names(missing_values[missing_values > 0])
+missing_info <- data.frame(Column = columns_with_missing, Percentage = missing_values[missing_values > 0])
+missing_info
+```
+Question: 2
+```{r}
+data$Gender <- factor(data$Gender)
+data$Race <- factor(data$Race)
+data$Age_at_Release <- factor(data$Age_at_Release)
+data$Gang_Affiliated <- factor(data$Gang_Affiliated)
+data$Supervision_Level_First <- factor(data$Supervision_Level_First)
+data$Education_Level <- factor(data$Education_Level)
+data$Dependents <- factor(data$Dependents)
+data$Prison_Offense <- factor(data$Prison_Offense)
+data$Prison_Years <- factor(data$Prison_Years)
+
+data$Prior_Arrest_Episodes_Felony <- factor(data$Prior_Arrest_Episodes_Felony)
+data$Prior_Arrest_Episodes_Misd <- factor(data$Prior_Arrest_Episodes_Misd)
+data$Prior_Arrest_Episodes_Violent <- factor(data$Prior_Arrest_Episodes_Violent)
+data$Prior_Arrest_Episodes_Property <- factor(data$Prior_Arrest_Episodes_Property)
+data$Prior_Arrest_Episodes_Drug <- factor(data$Prior_Arrest_Episodes_Drug)
+
+data$Prior_Arrest_Episodes_PPViolationCharges <- factor(data$Prior_Arrest_Episodes_PPViolationCharges)
+data$Prior_Arrest_Episodes_DVCharges <- factor(data$Prior_Arrest_Episodes_DVCharges)
+data$Prior_Arrest_Episodes_GunCharges <- factor(data$Prior_Arrest_Episodes_GunCharges)
+data$Prior_Conviction_Episodes_Felony <- factor(data$Prior_Conviction_Episodes_Felony)
+data$Prior_Conviction_Episodes_Misd <- factor(data$Prior_Conviction_Episodes_Misd)
+
+data$Prior_Conviction_Episodes_Viol <- factor(data$Prior_Conviction_Episodes_Viol)
+data$Prior_Conviction_Episodes_Prop <- factor(data$Prior_Conviction_Episodes_Prop)
+data$Prior_Conviction_Episodes_Drug <- factor(data$Prior_Conviction_Episodes_Drug)
+data$Prior_Conviction_Episodes_PPViolationCharges <- factor(data$Prior_Conviction_Episodes_PPViolationCharges)
+data$Prior_Conviction_Episodes_DomesticViolenceCharges <- factor(data$Prior_Conviction_Episodes_DomesticViolenceCharges)
+
+data$Prior_Conviction_Episodes_GunCharges <- factor(data$Prior_Conviction_Episodes_GunCharges)
+data$Prior_Revocations_Parole <- factor(data$Prior_Revocations_Parole)
+data$Prior_Revocations_Probation <- factor(data$Prior_Revocations_Probation)
+data$Condition_MH_SA <- factor(data$Condition_MH_SA)
+data$Condition_Cog_Ed <- factor(data$Condition_Cog_Ed)
+
+data$Condition_Other <- factor(data$Condition_Other)
+data$Violations_ElectronicMonitoring <- factor(data$Violations_ElectronicMonitoring)
+data$Violations_Instruction <- factor(data$Violations_Instruction)
+data$Violations_FailToReport <- factor(data$Violations_FailToReport)
+data$Violations_MoveWithoutPermission <- factor(data$Violations_MoveWithoutPermission)
+
+data$Delinquency_Reports <- factor(data$Delinquency_Reports)
+data$Program_Attendances <- factor(data$Program_Attendances)
+data$Program_UnexcusedAbsences <- factor(data$Program_UnexcusedAbsences)
+data$Residence_Changes <- factor(data$Residence_Changes)
+data$Employment_Exempt <- factor(data$Employment_Exempt)
+
+data$Recidivism_Within_3years <- factor(data$Recidivism_Within_3years)
+data$Training_Sample <- factor(data$Training_Sample)
+
+```
+
+```{r}
+
+str(data)
+
+```
+Question: 3
+```{r}
+data$Dependents <- ifelse(data$Dependents == "3 or more", 3,
+as.numeric(data$Dependents))
+data$Prior_Arrest_Episodes_Violent <- ifelse(data$Prior_Arrest_Episodes_Violent == "3 or more", 3,
+as.numeric(data$Prior_Arrest_Episodes_Violent))
+data$Prior_Conviction_Episodes_Felony <- ifelse(data$Prior_Conviction_Episodes_Felony == "3 or more", 3,
+as.numeric(data$Prior_Conviction_Episodes_Felony))
+data$Prior_Conviction_Episodes_Prop <- ifelse(data$Prior_Conviction_Episodes_Prop == "3 or more", 3,
+as.numeric(data$Prior_Conviction_Episodes_Prop))
+data$Program_UnexcusedAbsences <- ifelse(data$Program_UnexcusedAbsences == "3 or more", 3,
+as.numeric(data$Program_UnexcusedAbsences))
+data$Residence_Changes <- ifelse(data$Residence_Changes == "3 or more", 3,
+as.numeric(data$Residence_Changes))
+```
+
+```{r}
+str(data$Prior_Arrest_Episodes_Violent)
+str(data$Prior_Conviction_Episodes_Felony)
+str(data$Prior_Conviction_Episodes_Prop)
+str(data$Program_UnexcusedAbsences)
+str(data$Residence_Changes)
+```
+
+```{r}
+data$Prior_Arrest_Episodes_Felony <- ifelse(data$Prior_Arrest_Episodes_Felony == "10 or more", 10,
+as.numeric(data$Prior_Arrest_Episodes_Felony))
+data$Program_Attendances <- ifelse(data$Program_Attendances == "10 or more", 10,
+as.numeric(data$Program_Attendances))
+```
+
+```{r}
+str(data$Prior_Arrest_Episodes_Felony)
+str(data$Program_Attendances)
+```
+
+```{r}
+data$Prior_Arrest_Episodes_Misd <- ifelse(data$Prior_Arrest_Episodes_Misd == "6 or more", 6,
+as.numeric(data$Prior_Arrest_Episodes_Misd))
+```
+
+```{r}
+str(data$Prior_Arrest_Episodes_Misd)
+```
+
+```{r}
+data$Prior_Arrest_Episodes_Property <- ifelse(data$Prior_Arrest_Episodes_Property == "5 or more", 5,
+as.numeric(data$Prior_Arrest_Episodes_Property))
+data$Prior_Arrest_Episodes_Drug <- ifelse(data$Prior_Arrest_Episodes_Drug == "5 or more", 5,
+as.numeric(data$Prior_Arrest_Episodes_Drug))
+data$Prior_Arrest_Episodes_PPViolationCharges <- ifelse(data$Prior_Arrest_Episodes_PPViolationCharges == "5 or more", 5,
+as.numeric(data$Prior_Arrest_Episodes_PPViolationCharges))
+
+
+```
+
+```{r}
+str(data$Prior_Arrest_Episodes_Property)
+str(data$Prior_Arrest_Episodes_Drug)
+str(data$Prior_Arrest_Episodes_PPViolationCharges)
+```
+
+```{r}
+data$Prior_Conviction_Episodes_Misd <- ifelse(data$Prior_Conviction_Episodes_Misd == "4 or more", 4,
+as.numeric(data$Prior_Conviction_Episodes_Misd))
+data$Delinquency_Reports <- ifelse(data$Delinquency_Reports == "4 or more", 4,
+as.numeric(data$Delinquency_Reports))
+```
+
+```{r}
+str(data$Prior_Conviction_Episodes_Misd)
+str(data$Delinquency_Reports)
+```
+
+```{r}
+data$Prior_Conviction_Episodes_Drug <- ifelse(data$Prior_Conviction_Episodes_Drug == "2 or more", 2,
+as.numeric(data$Prior_Conviction_Episodes_Drug))
+```
+
+```{r}
+str(data$Prior_Conviction_Episodes_Drug)
+```
+
+```{r}
+str(data)
+```
+Question: 4
+```{r}
+library(ggplot2)
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Gender))
+print(chi_square)
+ggplot(data, aes(x = Gender, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Gender across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Race))
+print(chi_square)
+ggplot(data, aes(x = Race, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Race across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Age_at_Release))
+print(chi_square)
+ggplot(data, aes(x = Age_at_Release, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Age_at_Release across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Gang_Affiliated))
+print(chi_square)
+ggplot(data, aes(x = Gang_Affiliated, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Gang_Affiliated across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Supervision_Level_First ))
+print(chi_square)
+ggplot(data, aes(x = Supervision_Level_First , fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Supervision_Level_First  across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Education_Level))
+print(chi_square)
+ggplot(data, aes(x = Education_Level, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Education_Level across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prison_Offense))
+print(chi_square)
+ggplot(data, aes(x = Prison_Offense, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prison_Offense across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prison_Years))
+print(chi_square)
+ggplot(data, aes(x = Prison_Years, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prison_Years across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Arrest_Episodes_DVCharges))
+print(chi_square)
+ggplot(data, aes(x = Prior_Arrest_Episodes_DVCharges, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Arrest_Episodes_DVCharges across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Arrest_Episodes_GunCharges))
+print(chi_square)
+ggplot(data, aes(x = Prior_Arrest_Episodes_GunCharges, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Arrest_Episodes_GunCharges across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Conviction_Episodes_Viol))
+print(chi_square)
+ggplot(data, aes(x = Prior_Conviction_Episodes_Viol, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Conviction_Episodes_Viol across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Conviction_Episodes_PPViolationCharges))
+print(chi_square)
+ggplot(data, aes(x = Prior_Conviction_Episodes_PPViolationCharges, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Conviction_Episodes_PPViolationCharges across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Conviction_Episodes_DomesticViolenceCharges))
+print(chi_square)
+ggplot(data, aes(x = Prior_Conviction_Episodes_DomesticViolenceCharges , fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Conviction_Episodes_DomesticViolenceCharges across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Conviction_Episodes_GunCharges))
+print(chi_square)
+ggplot(data, aes(x = Prior_Conviction_Episodes_GunCharges, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Conviction_Episodes_GunCharges across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Revocations_Parole))
+print(chi_square)
+ggplot(data, aes(x = Prior_Revocations_Parole, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Revocations_Parole across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Prior_Revocations_Probation))
+print(chi_square)
+ggplot(data, aes(x = Prior_Revocations_Probation, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Prior_Revocations_Probation across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Condition_MH_SA))
+print(chi_square)
+ggplot(data, aes(x = Condition_MH_SA, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Condition_MH_SA across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Condition_Cog_Ed))
+print(chi_square)
+ggplot(data, aes(x = Condition_Cog_Ed, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Condition_Cog_Ed across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Condition_Other))
+print(chi_square)
+ggplot(data, aes(x = Condition_Other, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Condition_Other across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Violations_ElectronicMonitoring))
+print(chi_square)
+ggplot(data, aes(x = Violations_ElectronicMonitoring, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Violations_ElectronicMonitoring across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Violations_Instruction))
+print(chi_square)
+ggplot(data, aes(x = Violations_Instruction , fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Violations_Instruction across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Violations_FailToReport))
+print(chi_square)
+ggplot(data, aes(x = Violations_FailToReport, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Violations_FailToReport across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Violations_MoveWithoutPermission))
+print(chi_square)
+ggplot(data, aes(x = Violations_MoveWithoutPermission, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Violations_MoveWithoutPermission across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Employment_Exempt))
+print(chi_square)
+ggplot(data, aes(x = Employment_Exempt, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Employment_Exempt across Recidivism_Within_3years")
+
+chi_square <- chisq.test(table(data$Recidivism_Within_3years, data$Training_Sample))
+print(chi_square)
+ggplot(data, aes(x = Training_Sample, fill = Recidivism_Within_3years)) +
+  geom_bar(position = "fill") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) +
+  labs(title = "Distribution of Training_Sample across Recidivism_Within_3years")
+
+```
+
+```{r}
+t_test <- t.test(Residence_PUMA ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Residence_PUMA)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Residence_PUMA across Recidivism_Within_3years")
+
+t_test <- t.test(Supervision_Risk_Score_First ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Supervision_Risk_Score_First)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Supervision_Risk_Score_First across Recidivism_Within_3years")
+
+t_test <- t.test(Dependents ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Dependents)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Dependents across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Arrest_Episodes_Felony ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Arrest_Episodes_Felony)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Arrest_Episodes_Felony across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Arrest_Episodes_Misd ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Arrest_Episodes_Misd)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Arrest_Episodes_Misd across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Arrest_Episodes_Violent ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Arrest_Episodes_Violent)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Arrest_Episodes_Violent across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Arrest_Episodes_Property ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Arrest_Episodes_Property)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Arrest_Episodes_Property across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Arrest_Episodes_Drug ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Arrest_Episodes_Drug)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Arrest_Episodes_Drug across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Arrest_Episodes_PPViolationCharges ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Arrest_Episodes_PPViolationCharges)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Arrest_Episodes_PPViolationCharges across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Conviction_Episodes_Felony ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Conviction_Episodes_Felony)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Conviction_Episodes_Felony across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Conviction_Episodes_Misd ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Conviction_Episodes_Misd)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Conviction_Episodes_Misd across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Conviction_Episodes_Prop ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Conviction_Episodes_Prop)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Conviction_Episodes_Prop across Recidivism_Within_3years")
+
+t_test <- t.test(Prior_Conviction_Episodes_Drug ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Prior_Conviction_Episodes_Drug)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Prior_Conviction_Episodes_Drug across Recidivism_Within_3years")
+
+t_test <- t.test(Delinquency_Reports ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Delinquency_Reports)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Delinquency_Reports across Recidivism_Within_3years")
+
+t_test <- t.test(Program_Attendances ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Program_Attendances)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Program_Attendances across Recidivism_Within_3years")
+
+t_test <- t.test(Program_UnexcusedAbsences ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Program_UnexcusedAbsences)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Program_UnexcusedAbsences across Recidivism_Within_3years")
+
+t_test <- t.test(Avg_Days_per_DrugTest ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Avg_Days_per_DrugTest)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Avg_Days_per_DrugTest across Recidivism_Within_3years")
+
+t_test <- t.test(DrugTests_THC_Positive ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = DrugTests_THC_Positive)) +
+  geom_boxplot() +
+  labs(title = "Distribution of DrugTests_THC_Positive across Recidivism_Within_3years")
+
+t_test <- t.test(DrugTests_Cocaine_Positive ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = DrugTests_Cocaine_Positive)) +
+  geom_boxplot() +
+  labs(title = "Distribution of DrugTests_Cocaine_Positive across Recidivism_Within_3years")
+
+t_test <- t.test(DrugTests_Meth_Positive ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = DrugTests_Meth_Positive)) +
+  geom_boxplot() +
+  labs(title = "Distribution of DrugTests_Meth_Positive across Recidivism_Within_3years")
+
+t_test <- t.test(DrugTests_Other_Positive ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = DrugTests_Other_Positive)) +
+  geom_boxplot() +
+  labs(title = "Distribution of DrugTests_Other_Positive across Recidivism_Within_3years")
+
+t_test <- t.test(Percent_Days_Employed ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Percent_Days_Employed)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Percent_Days_Employed across Recidivism_Within_3years")
+
+t_test <- t.test(Jobs_Per_Year ~ Recidivism_Within_3years, data = data)
+print(t_test)
+ggplot(data, aes(x = Recidivism_Within_3years, y = Jobs_Per_Year)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Jobs_Per_Year across Recidivism_Within_3years")
+
+
+```
+
+```{r}
+cat("
+The feature that does not show a significant difference:
+Avg_Days_per_DrugTest
+Violations_ElectronicMonitoring
+Training_Sample
+    ")
+
+
+```
+Question: 6
+```{r}
+library(dplyr)
+train_data <- data %>% filter(Training_Sample == "1")
+test_data <- data %>% filter(Training_Sample == "0")
+
+train_data <- train_data %>% select(-Training_Sample)
+test_data <- test_data %>% select(-Training_Sample)
+
+```
+Question: 7
+```{r}
+num_missing_per_training <- colSums(is.na(train_data))
+num_missing_per_training
+```
+
+```{r}
+num_missing_per_test <- colSums(is.na(test_data))
+num_missing_per_test
+
+```
+Question 7
+```{r}
+library(dplyr)
+
+train_data <- train_data |>
+  mutate(
+    Supervision_Risk_Score_First = if_else(is.na(Supervision_Risk_Score_First), mean(Supervision_Risk_Score_First, na.rm = TRUE), Supervision_Risk_Score_First)
+  ) |>
+  mutate(
+    Avg_Days_per_DrugTest = if_else(is.na(Avg_Days_per_DrugTest), mean(Avg_Days_per_DrugTest, na.rm = TRUE), Avg_Days_per_DrugTest)
+  ) |>
+  mutate(
+    DrugTests_THC_Positive_imputed = if_else(is.na(DrugTests_THC_Positive), "True", "False"),
+    DrugTests_THC_Positive = if_else(is.na(DrugTests_THC_Positive), 0, DrugTests_THC_Positive)
+  ) |>
+  mutate(
+    DrugTests_Cocaine_Positive_imputed = if_else(is.na(DrugTests_Cocaine_Positive), "True", "False"),
+    DrugTests_Cocaine_Positive = if_else(is.na(DrugTests_Cocaine_Positive), 0, DrugTests_Cocaine_Positive)
+  ) |>
+  mutate(
+    DrugTests_Meth_Positive_imputed = if_else(is.na(DrugTests_Meth_Positive), "True", "False"),
+    DrugTests_Meth_Positive = if_else(is.na(DrugTests_Meth_Positive), 0, DrugTests_Meth_Positive)
+  ) |>
+  mutate(
+    DrugTests_Other_Positive_imputed = if_else(is.na(DrugTests_Other_Positive), "True", "False"),
+    DrugTests_Other_Positive = if_else(is.na(DrugTests_Other_Positive), 0, DrugTests_Other_Positive)
+  ) |>
+  mutate(
+    Percent_Days_Employed = if_else(is.na(Percent_Days_Employed), mean(Percent_Days_Employed, na.rm = TRUE), Percent_Days_Employed)
+  ) |>
+  mutate(
+    Jobs_Per_Year = if_else(is.na(Jobs_Per_Year), mean(Jobs_Per_Year, na.rm = TRUE), Jobs_Per_Year)
+  )
+```
+
+```{r}
+na_test <- colSums(is.na(train_data))
+na_test
+
+```
+
+
+Question: 8
+```{r}
+
+data <- data |>
+    mutate(
+        Risk_Group = case_when(
+            Supervision_Risk_Score_First >= 1 & Supervision_Risk_Score_First <= 3 ~ "low",
+            Supervision_Risk_Score_First >= 4 & Supervision_Risk_Score_First <= 6 ~ "medium",
+            Supervision_Risk_Score_First > 6 ~ "high"
+        )
+    )
+
+train_data <- train_data |>
+    mutate(
+        Risk_Group = case_when(
+            Supervision_Risk_Score_First >= 1 & Supervision_Risk_Score_First <= 3 ~ "low",
+            Supervision_Risk_Score_First >= 4 & Supervision_Risk_Score_First <= 6 ~ "medium",
+            Supervision_Risk_Score_First > 6 ~ "high"
+        )
+    )
+
+test_data <- test_data |>
+    mutate(
+        Risk_Group = case_when(
+            Supervision_Risk_Score_First >= 1 & Supervision_Risk_Score_First <= 3 ~ "low",
+            Supervision_Risk_Score_First >= 4 & Supervision_Risk_Score_First <= 6 ~ "medium",
+            Supervision_Risk_Score_First > 6 ~ "high"
+        )
+    )
+
+
+risk_group_percentages <- c(low = 0.20, medium = 0.40, high = 0.60)
+
+test_data <- test_data |>
+  mutate(
+    Predicted_Probability = risk_group_percentages[Risk_Group]
+  )
+
+test_data <- test_data |>
+  mutate(
+    Predicted_Label = ifelse(Predicted_Probability >= 0.5, 1, 0)
+  )
+
+confusion_matrix <- table(test_data$Recidivism_Within_3years, test_data$Predicted_Label)
+confusion_matrix
+
+
+
+```
+
+
+```{r}
+tp <- confusion_matrix[2, 2]
+fp <- confusion_matrix[1, 2]
+fn <- confusion_matrix[2, 1]
+tn <- confusion_matrix[1, 1]
+
+
+```
+
+```{r}
+
+precision <- tp / (tp + fp)
+recall <- tp / (tp + fn)
+f1_score <- 2 * precision * recall / (recall + precision)
+
+print(paste("Precision:", precision))
+print(paste("Recall:", recall))
+print(paste("F1 Score:", f1_score))
+
+```
+```{r}
+
+str(train_data)
+```
+
+Question: 10
+```{r}
+
+library(glmnet)
+library(caret)
+library(leaps)
+
+set.seed(1)
+
+
+lasso <- train(
+Recidivism_Within_3years~., data = train_data, method = "glmnet",
+trControl = trainControl("cv", number = 5),
+tuneGrid = expand.grid(alpha = 1, lambda = 10^seq(-3, 3, length
+= 100)), family = "binomial")  
+
+print(lasso$bestTune)
+print(lasso)
+
+```
+
+```{r}
+
+coef(lasso$finalModel, lasso$bestTune$lambda)
+```
+
+```{r}
+cat("
+As shown above LASSO pushed the coefficients of variables to
+zero ; hence, not using them in predicting the target (Recidivism_Within_3years)
+    ")
+```
+Question 11
+```{r}
+library(glmnet)
+library(caret)
+
+set.seed(1)
+
+ridge <- caret::train(
+  Recidivism_Within_3years ~ ., 
+  data = train_data, 
+  method = "glmnet",
+  trControl = trainControl("cv", number = 5),
+  tuneGrid = expand.grid(alpha = 0, lambda = 10^seq(-3, 3, length = 100)), 
+  family = "binomial"
+)
+
+print(ridge)
+
+
+```
+
+
+```{r}
+coef(ridge$finalModel, ridge$bestTune$lambda, ridge$bestTune$alpha)
+
+```
+Question 12
+```{r}
+
+library(glmnet)
+library(caret)
+
+set.seed(1)
+
+tuneGrid <- expand.grid(alpha = seq(0, 1, length=10), lambda = 10^seq(-3, 3, length = 100))
+
+elastic_net <- train(
+  Recidivism_Within_3years ~ .,
+  data = train_data,
+  method = "glmnet",
+  trControl = trainControl(method = "cv", number = 5),
+  tuneGrid = tuneGrid,
+  family = "binomial"
+)
+
+print(elastic_net$bestTune)
+print(elastic_net)
+
+```
+Question: 13
+```{r}
+library(caret)
+library(randomForest)
+
+set.seed(1)
+
+rf_model <- train(
+  Recidivism_Within_3years ~ .,
+  data = train_data,
+  method = "rf",
+  trControl = trainControl(method = "cv", number = 5),
+  importance = TRUE
+)
+
+print(rf_model)
+```
+
+```{r}
+rf_var_importance <- varImp(rf_model)
+
+print(rf_var_importance)
+```
+```{r}
+cat("Percent_Days_Employed is most predictive in the random forest model")
+```
+
+Question: 14
+```{r}
+library(caret)
+
+# Set seed for reproducibility
+set.seed(1)
+
+# Train GBM model with caret
+gbm_model <- train(
+  Recidivism_Within_3years ~ .,
+  data = train_data,
+  method = "gbm",
+  trControl = trainControl(method = "cv", number = 5),
+  verbose = FALSE
+)
+
+# Print the model
+print(gbm_model)
+
+```
+
+Question: 15
+```{r}
+library(caret)
+
+# Set seed for reproducibility
+set.seed(1)
+
+# Train SVM model with caret
+svm_model <- train(
+  Recidivism_Within_3years ~ .,
+  data = train_data,
+  method = "svmLinear",
+  trControl = trainControl(method = "cv", number = 5, preProc = c("center", "scale")),
+  verbose = FALSE
+)
+
+# Print the model
+print(svm_model)
+
+
+```
+
+
+
+
+
+```{r}
+library(kernlab)
+svm_linear.model <- train(Recidivism_Within_3years ~ ., data = train_data, method = "svmLinear", trControl = trainControl(method = "cv", number = 5, preProc = c("center", "scale")))
+print(svm_linear.model)
+```
+
+```{r}
+cat("
+C controls the bias-variance trade-off. As the value of C increases, the margins widen, allowing for more violations of the margin, which leads to high bias. Conversely, as the value of C decreases, the margins narrow, increasing the likelihood of overfitting the training data, resulting in high variance.
+    ")
+
+
+```
+
+
+```{r}
+set.seed(1)
+
+# Train an SVM model with radial basis function kernel
+svm_radial_model <- train(
+  Recidivism_Within_3years ~ ., 
+  data = train_data, 
+  method = "svmRadial", 
+  trControl = trainControl(method = "cv", number = 5, preProc = c("center", "scale"))
+)
+
+# Print the model summary
+print(svm_radial_model)
+
+
+```
+Question: 16
+```{r}
+models <- list(
+  LASSO = lasso,
+  RIDGE = ridge,
+  ElasticNet = elastic_net,
+  RandomForest = rf_model,
+  GBM = gbm_model,
+  SVMLinear = svm_model,
+  SVMRadial = svm_radial_model
+)
+
+
+model_resamples <- resamples(models)
+summary(model_resamples)
+
+
+```
+
+Question: 17
+```{r}
+library(caret)
+
+set.seed(40) 
+trainIndex <- createDataPartition(train_data$Recidivism_Within_3year, p = 0.90, list = TRUE, times = 1)
+trainData <- train_data[trainIndex[[1]], ]
+valData <- train_data[-trainIndex[[1]], ]
+
+cat("Train Data Dimensions: ", dim(trainData))
+
+
+```
+
+Question 18
+```{r}
+trainPredictors <- trainData[, names(trainData) != "Recidivism_Within_3year"]
+trainResponse <- trainData$Recidivism_Within_3year
+valPredictors <- valData[, names(valData) != "Recidivism_Within_3year"]
+valResponse <- valData$Recidivism_Within_3year
+
+dummies <- dummyVars(" ~ .", data = trainPredictors, fullRank = FALSE)
+trainX <- predict(dummies, newdata = trainPredictors)
+valX <- predict(dummies, newdata = valPredictors)
+
+trainResponse <- as.numeric(trainResponse) - 1
+valResponse <- as.numeric(valResponse) - 1
+
+trainResponse <- as.numeric(trainResponse)
+valResponse <- as.numeric(valResponse)
+
+features_train <- as.matrix(trainX)
+target_train <- as.matrix(trainResponse)
+features_val <- as.matrix(valX)
+target_val <- as.matrix(valResponse)
+
+cat("Train features dimensions: ", dim(features_train), "\n")
+cat("Validation features dimensions: ", dim(features_val), "\n")
+```
+
+Question 19
+```{r}
+library(keras)
+library(tfruns)
+
+model <- keras_model_sequential() %>%
+  layer_dense(units = 128, activation = "relu", input_shape = dim(features_train)[2]) %>% layer_dropout(0.5) %>%
+  layer_dense(units = 64, activation = "relu") %>% layer_dropout(rate = 0.5)
+  layer_dense(units = 1, activation = "sigmoid")
+
+model %>% compile(
+  loss = "binary_crossentropy",
+  optimizer = "adam",
+  metrics = "accuracy"
+)
+
+
+summary(model)
+```
+
+```{r}
+history <- model %>% fit(
+  x = features_train, y = trainResponse,
+  epochs = 20,
+  batch_size = 32,
+  validation_data = list(x = features_val, y = valResponse), verbose = 2)
+
+```
+
+
+```{r}
+library(tfruns)
+ls("package:tfruns")
+results <- tuning_run("C:\\Users\\Precision T3620\\Downloads\\model_script.R",
+                runs_dir = "runs", 
+                flags = list(
+                  dropout1 = c(0.1, 0.2, 0.5),
+                  dropout2 = c(0.1, 0.2, 0.5),
+                  batch_size = c( 32, 64)
+                ))
+
+
+
+logs_dir <- "runs"
+
+
+system(paste("tensorboard --logdir", logs_dir), wait = FALSE)
+
+
+```
+
+
+```{r}
+
+print(results)
+
+```
+
+```{r}
+
+results= results[order(results$metric_val_loss),]
+results
+
+```
+Question 20
+```{r}
+
+view_run(results$run_dir[1])
+
+
+```
+
+```{r}
+
+cat("
+Very low losses and high accuracies. Model doesn't overfit
+    ")
+
+
+```
+
+Question 21
+```{r}
+
+library(keras)
+
+combined_features <- rbind(features_train, features_val)
+combined_response <- c(trainResponse, valResponse)
+
+model <- keras_model_sequential() %>%
+  layer_dense(units = 128, activation = 'relu', input_shape = ncol(features_train)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 64, activation = 'relu') %>%
+  layer_dropout(rate = 0.1) %>%
+  layer_dense(units = 1, activation = 'sigmoid')
+
+model %>% compile(
+  optimizer = optimizer_adam(),
+  loss = 'binary_crossentropy',
+  metrics = c('accuracy')
+)
+
+history <- model %>% fit(
+  combined_features, combined_response,
+  epochs = 10,
+  batch_size = 64
+)
+
+plot(history)
+
+
+
+```
+Question 22
+```{r}
+predictions <- model %>% 
+  predict(features_val) %>% 
+  `>`(0.5) %>% 
+  as.numeric()
+
+conf_mat <- confusionMatrix(factor(predictions), factor(valResponse))
+
+precision <- conf_mat$byClass['Pos Pred Value']
+recall <- conf_mat$byClass['Sensitivity']
+
+f1_score <- 2 * (precision * recall) / (precision + recall)
+
+
+print(paste("Precision:", precision))
+print(paste("Recall:", recall))
+print(paste("F1 Score:", f1_score))
+
+
+
+```
+
+```{r}
+cat("
+ANN performed better than other models with higher accuracy
+    ")
+
+
+```
+
+
+Question 23
+```{r}
+
+library(iml)
+set.seed(1)
+train_index <- createDataPartition(data$Recidivism_Within_3years, p= 0.8, list = FALSE)
+reci_train_sl <- data[train_index, ]
+reci_test_sl <- data[-train_index, ]
+
+
+
+```
+
+```{r}
+library(gbm)
+library(caret)
+reci_train_sl <- as.data.frame(reci_train_sl)
+gbm <- caret::train(Recidivism_Within_3years ~., data = reci_train_sl, method = "gbm", trControl = trainControl("cv", number = 5), na.action=na.exclude)
+
+
+
+```
+
+```{r}
+predicted_default = predict(gbm, reci_test_sl)
+```
+
+```{r}
+mod <- Predictor$new(gbm, data = reci_test_sl, type="prob")
+```
+
+```{r}
+na_rows_reci_test_sl <- apply(reci_test_sl, 1, function(x) any(is.na(x)))
+```
+
+```{r}
+reci_test_sl <- reci_test_sl[!na_rows_reci_test_sl, ]
+```
+
+```{r}
+shapley <- Shapley$new(mod, x.interest = reci_test_sl[1:100, ])
+shapley
+```
+Question 24
+```{r}
+
+library(fairness)
+reci_test_sl$predicted_probabilities <- predict(gbm, reci_test_sl, type="prob")$true
+```
+
+```{r}
+dem_parity(
+  data = reci_test_sl,
+  outcome = 'Recidivism_Within_3years',
+  group = 'Gender',
+  probs = 'predicted_probabilities',
+  cutoff = 0.5,
+  base = "M"
+)
+
+
+
+```
+
+```{r}
+dem_parity(
+  data = reci_test_sl,
+  outcome = 'Recidivism_Within_3years',
+  group = 'Race',
+  probs = 'predicted_probabilities',
+  cutoff = 0.5,
+  base = 'WHITE'
+)
+
+
+```
+
+```{r}
+equal_odds(
+  data = reci_test_sl,
+  outcome = 'Recidivism_Within_3years',
+  group = 'Gender',
+  probs = 'predicted_probabilities',
+  cutoff = 0.5,
+  base = 'M'
+)
+
+
+```
+
+```{r}
+equal_odds(
+  data = reci_test_sl,
+  outcome = 'Recidivism_Within_3years',
+  group = 'Race',
+  probs = 'predicted_probabilities',
+  cutoff = 0.5,
+  base = 'WHITE'
+)
+
+
+```
+
+```{r}
+pred_rate_parity(
+  data = reci_test_sl,
+  outcome = 'Recidivism_Within_3years',
+  group = 'Gender',
+  probs = 'predicted_probabilities',
+  cutoff = 0.5,
+  base = 'M'
+)
+
+
+```
+
+```{r}
+pred_rate_parity(
+  data = reci_test_sl,
+  outcome = 'Recidivism_Within_3years',
+  group = 'Race',
+  probs = 'predicted_probabilities',
+  cutoff = 0.5,
+  base = 'WHITE'
+)
+
+
+```
